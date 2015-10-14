@@ -43,6 +43,7 @@
 #include <stdio.h>
 #include <poll.h>
 #include <string.h>
+#include <stm32.h>
 
 #include <uORB/uORB.h>
 #include <uORB/topics/sensor_combined.h>
@@ -50,10 +51,17 @@
 
 __EXPORT int px4_diff_app_main(int argc, char *argv[]);
 
+#define GPIO_ENC_IN1      (GPIO_INPUT|GPIO_PORTC|GPIO_PIN3)
+#define GPIO_ENC_IN2       (GPIO_INPUT|GPIO_PORTC|GPIO_PIN4)
 int px4_diff_app_main(int argc, char *argv[])
 {
+
+    stm32_configgpio(GPIO_ENC_IN1);
+    stm32_configgpio(GPIO_ENC_IN2);
+
 	printf("Hello BLUE Sky!\n");
     printf("Hello WHITE Sky!\n");
+
 
 	return 0;
 }
