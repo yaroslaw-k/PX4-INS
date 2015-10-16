@@ -50,17 +50,38 @@
 #include <uORB/topics/vehicle_attitude.h>
 
 __EXPORT int px4_diff_app_main(int argc, char *argv[]);
+__EXPORT void ch_one(void);
+__EXPORT void ch_two(void);
 
-#define GPIO_ENC_IN1      (GPIO_INPUT|GPIO_PORTC|GPIO_PIN3)
-#define GPIO_ENC_IN2       (GPIO_INPUT|GPIO_PORTC|GPIO_PIN4)
+
+//#define GPIO_ENC_IN1      (GPIO_INPUT|GPIO_PULLUP|GPIO_PORTC|GPIO_PIN3)
+//#define GPIO_ENC_IN2       (GPIO_INPUT|GPIO_PULLUP|GPIO_PORTC|GPIO_PIN4)
+#define GPIO_ENC_IN1 (GPIO_INPUT | GPIO_PULLUP | GPIO_EXTI | GPIO_PORTC | GPIO_PIN2)
+#define GPIO_ENC_IN2 (GPIO_INPUT | GPIO_PULLUP | GPIO_EXTI | GPIO_PORTC | GPIO_PIN3)
+
+void ch_one(void){
+    printf("port 1 trigger\n");
+
+}
+
+
+void ch_two(void){
+    printf("port 2 trigger\n");
+
+}
+
 int px4_diff_app_main(int argc, char *argv[])
 {
+   // stm32_configgpio(GPIO_ENC_IN1);
+   // stm32_configgpio(GPIO_ENC_IN2);
 
-    stm32_configgpio(GPIO_ENC_IN1);
-    stm32_configgpio(GPIO_ENC_IN2);
+    stm32_gpiosetevent(GPIO_ENC_IN1, true, false, false, ch_one);
+    stm32_gpiosetevent(GPIO_ENC_IN2, true, false, false, ch_two);
 
-	printf("Hello BLUE Sky!\n");
-    printf("Hello WHITE Sky!\n");
+
+
+    printf("Test App\n");
+
 
 
 	return 0;
