@@ -136,15 +136,17 @@ function(px4_add_git_submodule)
 		REQUIRED TARGET PATH
 		ARGN ${ARGN})
 	string(REPLACE "/" "_" NAME ${PATH})
-	add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/git_${NAME}.stamp
+	add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/git_init_${NAME}.stamp
 		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 		COMMAND git submodule init ${PATH}
-		COMMAND git submodule update -f ${PATH}
-		COMMAND touch ${CMAKE_BINARY_DIR}/git_${NAME}.stamp
+		COMMAND touch ${CMAKE_BINARY_DIR}/git_init_${NAME}.stamp
+		DEPENDS ${CMAKE_SOURCE_DIR}/.gitmodules
 		)
 	add_custom_target(${TARGET}
-		DEPENDS git_${NAME}.stamp
-	)
+		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+		COMMAND git submodule update --recursive ${PATH}
+		DEPENDS ${CMAKE_BINARY_DIR}/git_init_${NAME}.stamp
+		)
 endfunction()
 
 #=============================================================================
@@ -330,7 +332,6 @@ function(px4_generate_messages)
 	if(NOT VERBOSE)
 		set(QUIET "-q")
 	endif()
-	set(PYTHONPATH "${CMAKE_SOURCE_DIR}/Tools/genmsg/src:${CMAKE_SOURCE_DIR}/Tools/gencpp/src:$ENV{PYTHONPATH}")
 	set(msg_out_path ${CMAKE_BINARY_DIR}/src/modules/uORB/topics)
 	set(msg_list)
 	foreach(msg_file ${MSG_FILES})
@@ -342,7 +343,7 @@ function(px4_generate_messages)
 		list(APPEND msg_files_out ${msg_out_path}/${msg}.h)
 	endforeach()
 	add_custom_command(OUTPUT ${msg_files_out}
-		COMMAND PYTHONPATH=${PYTHONPATH} ${PYTHON_EXECUTABLE} 
+		COMMAND ${PYTHON_EXECUTABLE} 
 			Tools/px_generate_uorb_topic_headers.py
 			${QUIET}
 			-d msg
@@ -363,7 +364,7 @@ function(px4_generate_messages)
 		list(APPEND msg_multi_files_out ${msg_multi_out_path}/px4_${msg}.h)
 	endforeach()
 	add_custom_command(OUTPUT ${msg_multi_files_out}
-		COMMAND PYTHONPATH=${PYTHONPATH} ${PYTHON_EXECUTABLE} 
+		COMMAND ${PYTHON_EXECUTABLE} 
 			Tools/px_generate_uorb_topic_headers.py
 			${QUIET}
 			-d msg
@@ -420,12 +421,13 @@ function(px4_add_upload)
 			)
 	elseif(${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Windows")
 		foreach(port RANGE 32 0)
-			list(APPEND "COM${port}")
+			list(APPEND serial_ports
+				"COM${port}")
 		endforeach()
 	endif()
 	px4_join(OUT serial_ports LIST "${serial_ports}" GLUE ",")
 	add_custom_target(${OUT}
-		COMMAND PYTHONPATH=${PYTHONPATH} ${PYTHON_EXECUTABLE}
+		COMMAND ${PYTHON_EXECUTABLE}
 			${CMAKE_SOURCE_DIR}/Tools/px_uploader.py --port ${serial_ports} ${BUNDLE}
 		DEPENDS ${BUNDLE}
 		WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
@@ -536,6 +538,7 @@ function(px4_add_common_flags)
 		-ffunction-sections
 		-fdata-sections
 		)
+
 	if (NOT ${CMAKE_C_COMPILER_ID} STREQUAL "Clang")
 		list(APPEND optimization_flags
 			-fno-strength-reduce
@@ -566,6 +569,7 @@ function(px4_add_common_flags)
 	set(cxx_warnings
 		-Wno-missing-field-initializers
 		)
+
 	set(cxx_compile_flags
 		-g
 		-fno-exceptions
@@ -578,7 +582,7 @@ function(px4_add_common_flags)
 
 	set(visibility_flags
 		-fvisibility=hidden
-		"-include ${CMAKE_SOURCE_DIR}/src/include/visibility.h"
+		-include visibility.h
 		)
 
 	set(added_c_flags
@@ -698,6 +702,7 @@ function(px4_create_git_hash_header)
 		COMMAND git log -n 1 --pretty=format:"%H"
 		OUTPUT_VARIABLE git_desc
 		OUTPUT_STRIP_TRAILING_WHITESPACE
+		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 		)
 	message(STATUS "GIT_DESC = ${git_desc}")
 	set(git_desc_short)
@@ -730,7 +735,9 @@ function(px4_generate_parameters_xml)
 		REQUIRED OUT BOARD
 		ARGN ${ARGN})
 	set(path ${CMAKE_SOURCE_DIR}/src)
-	file(GLOB_RECURSE param_src_files ${path}/*.h* ${path}/*.c*)
+	file(GLOB_RECURSE param_src_files
+		${CMAKE_SOURCE_DIR}/src/*params.c
+		)
 	add_custom_command(OUTPUT ${OUT}
 		COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/Tools/px_process_params.py
 			-s ${path} --board CONFIG_ARCH_${BOARD} --xml

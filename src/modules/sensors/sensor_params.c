@@ -586,6 +586,34 @@ PARAM_DEFINE_FLOAT(CAL_ACC2_YSCALE, 1.0f);
 PARAM_DEFINE_FLOAT(CAL_ACC2_ZSCALE, 1.0f);
 
 /**
+ * Primary accel ID
+ *
+ * @group Sensor Calibration
+ */
+PARAM_DEFINE_INT32(CAL_ACC_PRIME, 0);
+
+/**
+ * Primary gyro ID
+ *
+ * @group Sensor Calibration
+ */
+PARAM_DEFINE_INT32(CAL_GYRO_PRIME, 0);
+
+/**
+ * Primary mag ID
+ *
+ * @group Sensor Calibration
+ */
+PARAM_DEFINE_INT32(CAL_MAG_PRIME, 0);
+
+/**
+ * Primary baro ID
+ *
+ * @group Sensor Calibration
+ */
+PARAM_DEFINE_INT32(CAL_BARO_PRIME, 0);
+
+/**
  * Differential pressure sensor offset
  *
  * The offset (zero-reading) in Pascal
@@ -1810,7 +1838,6 @@ PARAM_DEFINE_INT32(BAT_V_SCALE_IO, 10000);
 /**
  * Scaling factor for battery voltage sensor on FMU v2.
  *
- * @board CONFIG_ARCH_BOARD_PX4FMU_V2
  * @group Battery Calibration
  */
 PARAM_DEFINE_FLOAT(BAT_V_SCALING, -1.0f);
