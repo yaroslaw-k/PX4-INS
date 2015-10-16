@@ -45,6 +45,7 @@
 #include <string.h>
 #include <stm32.h>
 
+
 #include <uORB/uORB.h>
 #include <uORB/topics/sensor_combined.h>
 #include <uORB/topics/vehicle_attitude.h>
