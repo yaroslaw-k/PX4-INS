@@ -50,8 +50,8 @@
 #include <uORB/topics/vehicle_attitude.h>
 
 __EXPORT int px4_diff_app_main(int argc, char *argv[]);
-__EXPORT void ch_one(void);
-__EXPORT void ch_two(void);
+//__EXPORT  int ch_one(void);
+//__EXPORT  int ch_two(void);
 
 
 //#define GPIO_ENC_IN1      (GPIO_INPUT|GPIO_PULLUP|GPIO_PORTC|GPIO_PIN3)
@@ -59,14 +59,16 @@ __EXPORT void ch_two(void);
 #define GPIO_ENC_IN1 (GPIO_INPUT | GPIO_PULLUP | GPIO_EXTI | GPIO_PORTC | GPIO_PIN2)
 #define GPIO_ENC_IN2 (GPIO_INPUT | GPIO_PULLUP | GPIO_EXTI | GPIO_PORTC | GPIO_PIN3)
 
-void ch_one(void){
+static int ch_one(void){
     printf("port 1 trigger\n");
+    return 0;
 
 }
 
 
-void ch_two(void){
+static int ch_two(void){
     printf("port 2 trigger\n");
+    return 0;
 
 }
 
@@ -75,8 +77,8 @@ int px4_diff_app_main(int argc, char *argv[])
    // stm32_configgpio(GPIO_ENC_IN1);
    // stm32_configgpio(GPIO_ENC_IN2);
 
-    stm32_gpiosetevent(GPIO_ENC_IN1, true, false, false, ch_one);
-    stm32_gpiosetevent(GPIO_ENC_IN2, true, false, false, ch_two);
+    stm32_gpiosetevent(GPIO_ENC_IN1, true, false, false, (xcpt_t)ch_one);
+    stm32_gpiosetevent(GPIO_ENC_IN2, true, false, false, (xcpt_t)ch_two);
 
 
 
